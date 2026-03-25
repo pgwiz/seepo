@@ -59,6 +59,21 @@ void savePATToConfig(const string& configFile, const string& pat) {
     }
 }
 
+string readConfigPAT(const string& configFile) {
+    ifstream file(configFile.c_str());
+    if (file.is_open()) {
+        string line;
+        while (getline(file, line)) {
+            if (line.substr(0, 4) == "PAT=") {
+                file.close();
+                return line.substr(4);
+            }
+        }
+        file.close();
+    }
+    return "";
+}
+
 void printBanner() {
     clearScreen();
     setColor(COLOR_LIGHT_CYAN);
