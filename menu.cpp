@@ -43,20 +43,11 @@ void pause() {
     system("pause > nul");
 }
 
-string readConfigPAT(const string& configFile) {
-    ifstream file(configFile.c_str());
-    if (file.is_open()) {
-        string line;
-        while (getline(file, line)) {
-            if (line.substr(0, 4) == "PAT=") {
-                file.close();
-                return line.substr(4);
-            }
-        }
-        file.close();
-    }
-    return "";
-}
+// ============================================================================
+// CONFIGURATION
+// ============================================================================
+const string FORK_REPO = "https://github.com/pgwiz/seepo.git";
+const string UPSTREAM_REPO = "https://github.com/pkinyanjui461-dev/seepo.git";
 
 void savePATToConfig(const string& configFile, const string& pat) {
     ofstream file(configFile.c_str(), ios::trunc);
@@ -73,11 +64,30 @@ void printBanner() {
     setColor(COLOR_LIGHT_CYAN);
     cout << "\n";
     cout << "  ╔════════════════════════════════════════════════════════════════════════════╗\n";
+    cout << "  ║                                                                            ║\n";
     setColor(COLOR_LIGHT_YELLOW);
-    cout << "  ║                                                                            ║\n";
-    cout << "  ║         SEEPO Git Repository Sync Manager (C++) v1.0                      ║\n";
-    cout << "  ║                                                                            ║\n";
+    cout << "  ║    ███████╗███████╗███████╗██████╗  ██████╗     ███████╗██╗   ██╗███╗   ███╗ ║\n";
+    cout << "  ║    ██╔════╝██╔════╝██╔════╝██╔══██╗██╔═══██╗    ██╔════╝╚██╗ ██╔╝████╗ ████║ ║\n";
+    cout << "  ║    ███████╗█████╗  █████╗  ██████╔╝██║   ██║    ███████╗ ╚████╔╝ ██╔████╔██║ ║\n";
+    cout << "  ║    ╚════██║██╔══╝  ██╔══╝  ██╔═══╝ ██║   ██║    ╚════██║  ╚██╔╝  ██║╚██╔╝██║ ║\n";
+    cout << "  ║    ███████║███████╗███████╗██║     ╚██████╔╝    ███████║   ██║   ██║ ╚═╝ ██║ ║\n";
+    cout << "  ║    ╚══════╝╚══════╝╚══════╝╚═╝      ╚═════╝     ╚══════╝   ╚═╝   ╚═╝     ╚═╝ ║\n";
     setColor(COLOR_LIGHT_CYAN);
+    cout << "  ║                                                                            ║\n";
+    cout << "  ║                     ██████╗ ██╗████████╗                                  ║\n";
+    cout << "  ║                    ██╔════╝ ██║╚══██╔══╝                                  ║\n";
+    setColor(COLOR_LIGHT_GREEN);
+    cout << "  ║                    ██║  ███╗██║   ██║                                     ║\n";
+    cout << "  ║                    ██║   ██║██║   ██║                                     ║\n";
+    cout << "  ║                    ╚██████╔╝██║   ██║                                     ║\n";
+    cout << "  ║                     ╚═════╝ ╚═╝   ╚═╝                                     ║\n";
+    setColor(COLOR_LIGHT_CYAN);
+    cout << "  ║                                                                            ║\n";
+    setColor(COLOR_LIGHT_YELLOW);
+    cout << "  ║                 GitHub Repository Fork & Upstream Sync Tool               ║\n";
+    cout << "  ║                              Version 1.0                                  ║\n";
+    setColor(COLOR_LIGHT_CYAN);
+    cout << "  ║                                                                            ║\n";
     cout << "  ╚════════════════════════════════════════════════════════════════════════════╝\n";
     setColor(COLOR_WHITE);
     cout << "\n";
@@ -143,24 +153,41 @@ void executeSyncCommand(const string& pat, const string& branch) {
     setColor(COLOR_WHITE);
     cout << "\n";
 
-    // Construct git URL with PAT
-    string urlWithPAT = "https://" + pat + "@github.com/pgwiz/seepo.git";
+    // Construct git URLs with PAT
+    string forkURL = "https://" + pat + "@github.com/pgwiz/seepo.git";
+    string upstreamURL = "https://github.com/pkinyanjui461-dev/seepo.git";
 
-    // Build git commands
+    // Build git commands for syncing fork with upstream
     stringstream commands;
+
+    // Check if .git exists
+    commands << "if not exist \".git\" (git clone " << forkURL << " . & ) & ";
+
+    // Configure remotes
     commands << "git remote remove origin 2>nul & ";
-    commands << "git remote add origin " << urlWithPAT << " & ";
-    commands << "git fetch origin " << branch << " --force --quiet & ";
+    commands << "git remote add origin " << forkURL << " & ";
+    commands << "git remote remove upstream 2>nul & ";
+    commands << "git remote add upstream " << upstreamURL << " & ";
+
+    // Fetch from both remotes
+    commands << "git fetch origin --quiet & ";
+    commands << "git fetch upstream --quiet & ";
+
+    // Checkout branch or create tracking branch
     commands << "git checkout " << branch << " 2>nul || git checkout --track origin/" << branch << " 2>nul & ";
-    commands << "git pull origin " << branch << " --force --quiet & ";
+
+    // Sync from upstream to origin
+    commands << "git pull upstream " << branch << " --quiet & ";
+    commands << "git push origin " << branch << " --quiet & ";
+
     setColor(COLOR_LIGHT_GREEN);
-    cout << "  Repository updated!\n\n";
+    cout << "  Repository synced!\n\n";
     cout << "  Current commit info:\n";
     setColor(COLOR_LIGHT_YELLOW);
-    system("git log -1 --pretty=format:\"  Commit: %%h - %%s (%%ar)\"");
-    cout << "\n\n";
 
     system(commands.str().c_str());
+    system("git log -1 --pretty=format:\"  Commit: %%h - %%s (%%ar)\"");
+    cout << "\n\n";
 }
 
 int main() {
