@@ -34,6 +34,10 @@ staticfiles/
 
 # Scripts & Local Tools
 menu.cmd
+menu.exe
+menu.o
+menu.conf
+*.conf
 
 # OS files
 .DS_Store
