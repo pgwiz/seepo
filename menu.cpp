@@ -211,7 +211,7 @@ int main() {
             continue;
         }
 
-        choice = stoi(input);
+        choice = atoi(input.c_str());
 
         switch (choice) {
             case 0:
