@@ -49,11 +49,14 @@ void pause() {
 const string FORK_REPO = "https://github.com/pgwiz/seepo.git";
 const string UPSTREAM_REPO = "https://github.com/pkinyanjui461-dev/seepo.git";
 
-void savePATToConfig(const string& configFile, const string& pat, const string& parentPat) {
+void savePATToConfig(const string& configFile, const string& pat, const string& parentPat, const string& username = "") {
     ofstream file(configFile.c_str(), ios::trunc);
     if (file.is_open()) {
         file << "PAT=" << pat << endl;
         file << "PARENT_PAT=" << parentPat << endl;
+        if (!username.empty()) {
+            file << "GITHUB_USERNAME=" << username << endl;
+        }
         file << "# SEEPO Git Sync Configuration\n";
         file << "# Created: " << __DATE__ << " " << __TIME__ << endl;
         file.close();
@@ -80,32 +83,21 @@ void printBanner() {
     clearScreen();
     setColor(COLOR_LIGHT_CYAN);
     cout << "\n";
-    cout << "  ╔════════════════════════════════════════════════════════════════════════════╗\n";
-    cout << "  ║                                                                            ║\n";
+    cout << "  +----------------------------------------------------------------------------+\n";
     setColor(COLOR_LIGHT_YELLOW);
-    cout << "  ║    ███████╗███████╗███████╗██████╗  ██████╗     ███████╗██╗   ██╗███╗   ███╗ ║\n";
-    cout << "  ║    ██╔════╝██╔════╝██╔════╝██╔══██╗██╔═══██╗    ██╔════╝╚██╗ ██╔╝████╗ ████║ ║\n";
-    cout << "  ║    ███████╗█████╗  █████╗  ██████╔╝██║   ██║    ███████╗ ╚████╔╝ ██╔████╔██║ ║\n";
-    cout << "  ║    ╚════██║██╔══╝  ██╔══╝  ██╔═══╝ ██║   ██║    ╚════██║  ╚██╔╝  ██║╚██╔╝██║ ║\n";
-    cout << "  ║    ███████║███████╗███████╗██║     ╚██████╔╝    ███████║   ██║   ██║ ╚═╝ ██║ ║\n";
-    cout << "  ║    ╚══════╝╚══════╝╚══════╝╚═╝      ╚═════╝     ╚══════╝   ╚═╝   ╚═╝     ╚═╝ ║\n";
-    setColor(COLOR_LIGHT_CYAN);
-    cout << "  ║                                                                            ║\n";
-    cout << "  ║                     ██████╗ ██╗████████╗                                  ║\n";
-    cout << "  ║                    ██╔════╝ ██║╚══██╔══╝                                  ║\n";
+    cout << "  |                                                                            |\n";
+    cout << "  |                      SEEPO GIT SYNC TOOL (C++)                            |\n";
+    cout << "  |                   Automate Fork Synchronization                           |\n";
+    cout << "  |                                                                            |\n";
     setColor(COLOR_LIGHT_GREEN);
-    cout << "  ║                    ██║  ███╗██║   ██║                                     ║\n";
-    cout << "  ║                    ██║   ██║██║   ██║                                     ║\n";
-    cout << "  ║                    ╚██████╔╝██║   ██║                                     ║\n";
-    cout << "  ║                     ╚═════╝ ╚═╝   ╚═╝                                     ║\n";
+    cout << "  |              Pull from Upstream � Push to Fork � Sync Fork                |\n";
     setColor(COLOR_LIGHT_CYAN);
-    cout << "  ║                                                                            ║\n";
+    cout << "  |                                                                            |\n";
     setColor(COLOR_LIGHT_YELLOW);
-    cout << "  ║                 GitHub Repository Fork & Upstream Push Tool               ║\n";
-    cout << "  ║                              Version 1.0                                  ║\n";
+    cout << "  |                              Version 2.0                                  |\n";
     setColor(COLOR_LIGHT_CYAN);
-    cout << "  ║                                                                            ║\n";
-    cout << "  ╚════════════════════════════════════════════════════════════════════════════╝\n";
+    cout << "  |                                                                            |\n";
+    cout << "  +----------------------------------------------------------------------------+\n";
     setColor(COLOR_WHITE);
     cout << "\n";
 }
@@ -114,31 +106,49 @@ void printMenu() {
     clearScreen();
     setColor(COLOR_LIGHT_CYAN);
     cout << "\n";
-    cout << "  ╔════════════════════════════════════════════════════════════════════════════╗\n";
+    cout << "  +----------------------------------------------------------------------------+\n";
     setColor(COLOR_LIGHT_YELLOW);
-    cout << "  ║                        SELECT OPERATION TO PERFORM                        ║\n";
+    cout << "  |                        SELECT OPERATION TO PERFORM                        |\n";
     setColor(COLOR_LIGHT_CYAN);
-    cout << "  ╚════════════════════════════════════════════════════════════════════════════╝\n";
+    cout << "  +----------------------------------------------------------------------------+\n";
     cout << "\n";
     setColor(COLOR_WHITE);
+    cout << "  SYNC FROM FORK (Pull)\n";
+    setColor(COLOR_LIGHT_GREEN);
+    cout << "     [1] Sync MAIN branch from Fork\n";
+    setColor(COLOR_LIGHT_MAGENTA);
+    cout << "     [2] Sync MASTER branch from Fork\n";
+    setColor(COLOR_LIGHT_YELLOW);
+    cout << "     [3] Sync BOTH branches from Fork\n";
+    setColor(COLOR_WHITE);
+    cout << "\n";
     cout << "  PUSH TO PARENT (Upstream Repository)\n";
     setColor(COLOR_LIGHT_GREEN);
-    cout << "     [1] ► Push MAIN branch to Parent\n";
+    cout << "     [4] Push MAIN branch to Parent\n";
     setColor(COLOR_LIGHT_MAGENTA);
-    cout << "     [2] ► Push MASTER branch to Parent\n";
+    cout << "     [5] Push MASTER branch to Parent\n";
     setColor(COLOR_LIGHT_YELLOW);
-    cout << "     [3] ► Push BOTH branches to Parent\n";
+    cout << "     [6] Push BOTH branches to Parent\n";
+    setColor(COLOR_WHITE);
+    cout << "\n";
+    cout << "  SYNC FROM PARENT & UPDATE FORK (Sync Fork Button)\n";
+    setColor(COLOR_LIGHT_GREEN);
+    cout << "     [9] Sync MAIN from Parent & Push to Fork\n";
+    setColor(COLOR_LIGHT_MAGENTA);
+    cout << "     [10] Sync MASTER from Parent & Push to Fork\n";
+    setColor(COLOR_LIGHT_YELLOW);
+    cout << "     [11] Sync BOTH from Parent & Push to Fork\n";
     setColor(COLOR_WHITE);
     cout << "\n";
     cout << "  CONFIGURATION\n";
     setColor(COLOR_LIGHT_CYAN);
-    cout << "     [4] ► Update PAT Token        (Fork authentication)\n";
-    cout << "     [5] ► Update PARENT_PAT       (Upstream authentication)\n";
+    cout << "     [7] Update PAT Token        (Fork authentication)\n";
+    cout << "     [8] Update PARENT_PAT       (Upstream authentication)\n";
     setColor(COLOR_RED);
-    cout << "     [0] ► EXIT\n";
+    cout << "     [0] EXIT\n";
     setColor(COLOR_WHITE);
     cout << "\n";
-    cout << "  ────────────────────────────────────────────────────────────────────────────\n";
+    cout << "  +----------------------------------------------------------------------------+\n";
     cout << "\n";
 }
 
@@ -146,20 +156,18 @@ void executePushCommand(const string& parentPat, const string& branch) {
     clearScreen();
     setColor(COLOR_LIGHT_CYAN);
     cout << "\n";
-    cout << "  ╔════════════════════════════════════════════════════════════════════════════╗\n";
+    cout << "  +----------------------------------------------------------------------------+\n";
     setColor(COLOR_LIGHT_YELLOW);
-    cout << "  ║                   PUSHING " << (branch == "main" ? "MAIN" : "MASTER") << " BRANCH TO PARENT...                    ║\n";
+    cout << "  |                   PUSHING " << (branch == "main" ? "MAIN" : "MASTER") << " BRANCH TO PARENT...                    |\n";
     setColor(COLOR_LIGHT_CYAN);
-    cout << "  ╚════════════════════════════════════════════════════════════════════════════╝\n";
+    cout << "  +----------------------------------------------------------------------------+\n";
     setColor(COLOR_WHITE);
     cout << "\n";
 
-    // Construct parent upstream URL with PAT
-    string parentURL = "https://" + parentPat + "@github.com/pkinyanjui461-dev/seepo.git";
-
+    // Use git remote 'upstream' for push
     // Build git push command
     stringstream commands;
-    commands << "git push " << parentURL << " " << branch << " --quiet";
+    commands << "git push upstream " << branch << " --quiet";
 
     setColor(COLOR_LIGHT_GREEN);
     cout << "  Pushing " << branch << " branch to parent repository...\n\n";
@@ -169,6 +177,77 @@ void executePushCommand(const string& parentPat, const string& branch) {
 
     setColor(COLOR_LIGHT_GREEN);
     cout << "\n  [SUCCESS] Push completed!\n";
+    setColor(COLOR_WHITE);
+    cout << "\n";
+}
+
+void executeSyncCommand(const string& pat, const string& branch) {
+    clearScreen();
+    setColor(COLOR_LIGHT_CYAN);
+    cout << "\n";
+    cout << "  +----------------------------------------------------------------------------+\n";
+    setColor(COLOR_LIGHT_YELLOW);
+    cout << "  |                   SYNCING " << (branch == "main" ? "MAIN" : "MASTER") << " BRANCH FROM FORK...                      |\n";
+    setColor(COLOR_LIGHT_CYAN);
+    cout << "  +----------------------------------------------------------------------------+\n";
+    setColor(COLOR_WHITE);
+    cout << "\n";
+
+    // Construct fork URL with PAT - use git remote 'origin'
+    // Build git fetch and merge commands
+    stringstream commands;
+    commands << "git fetch origin " << branch << " && git merge origin/" << branch << " --quiet";
+
+    setColor(COLOR_LIGHT_GREEN);
+    cout << "  Syncing " << branch << " branch from fork repository (pgwiz/seepo)...\n\n";
+    setColor(COLOR_LIGHT_YELLOW);
+
+    system(commands.str().c_str());
+
+    setColor(COLOR_LIGHT_GREEN);
+    cout << "\n  [SUCCESS] Sync completed!\n";
+    setColor(COLOR_WHITE);
+    cout << "\n";
+}
+
+void executeSyncFromParentCommand(const string& parentPat, const string& branch) {
+    clearScreen();
+    setColor(COLOR_LIGHT_CYAN);
+    cout << "\n";
+    cout << "  +----------------------------------------------------------------------------+\n";
+    setColor(COLOR_LIGHT_YELLOW);
+    cout << "  |                   SYNCING " << (branch == "main" ? "MAIN" : "MASTER") << " BRANCH FROM PARENT...                    |\n";
+    setColor(COLOR_LIGHT_CYAN);
+    cout << "  +----------------------------------------------------------------------------+\n";
+    setColor(COLOR_WHITE);
+    cout << "\n";
+
+    // Step 1: Fetch from upstream
+    setColor(COLOR_LIGHT_CYAN);
+    cout << "  Step 1/3: Fetching from upstream...\n";
+    setColor(COLOR_LIGHT_YELLOW);
+    stringstream fetchCmd;
+    fetchCmd << "git fetch upstream " << branch;
+    system(fetchCmd.str().c_str());
+
+    // Step 2: Merge locally
+    setColor(COLOR_LIGHT_CYAN);
+    cout << "\n  Step 2/3: Merging into local branch...\n";
+    setColor(COLOR_LIGHT_YELLOW);
+    stringstream mergeCmd;
+    mergeCmd << "git merge upstream/" << branch << " --quiet";
+    system(mergeCmd.str().c_str());
+
+    // Step 3: Push back to fork
+    setColor(COLOR_LIGHT_CYAN);
+    cout << "  Step 3/3: Pushing to fork (origin)...\n";
+    setColor(COLOR_LIGHT_YELLOW);
+    stringstream pushCmd;
+    pushCmd << "git push origin " << branch << " --quiet";
+    system(pushCmd.str().c_str());
+
+    setColor(COLOR_LIGHT_GREEN);
+    cout << "\n  [SUCCESS] Fork synced and updated on GitHub!\n";
     setColor(COLOR_WHITE);
     cout << "\n";
 }
@@ -235,7 +314,7 @@ int main() {
         printMenu();
 
         setColor(COLOR_LIGHT_CYAN);
-        cout << "  Select option (0-5): ";
+        cout << "  Select option (0-11): ";
         setColor(COLOR_WHITE);
 
         string input;
@@ -248,40 +327,81 @@ int main() {
         choice = atoi(input.c_str());
 
         switch (choice) {
-            case 0:
+            case 0: {
                 clearScreen();
                 setColor(COLOR_LIGHT_CYAN);
                 cout << "\n";
-                cout << "  ╔════════════════════════════════════════════════════════════════════════════╗\n";
+                cout << "  +----------------------------------------------------------------------------+\n";
                 setColor(COLOR_LIGHT_YELLOW);
-                cout << "  ║                                                                            ║\n";
-                cout << "  ║                 Thank you for using SEEPO Sync (C++)!                     ║\n";
-                cout << "  ║                                                                            ║\n";
+                cout << "  |                                                                            |\n";
+                cout << "  |                 Thank you for using SEEPO Sync (C++)!                     |\n";
+                cout << "  |                                                                            |\n";
                 setColor(COLOR_LIGHT_CYAN);
-                cout << "  ╚════════════════════════════════════════════════════════════════════════════╝\n";
+                cout << "  +----------------------------------------------------------------------------+\n";
                 setColor(COLOR_WHITE);
                 cout << "\n";
                 return 0;
+            }
 
-            case 1:
-                executePushCommand(parentPat, "main");
+            case 1: {
+                executeSyncCommand(pat, "main");
                 pause();
                 break;
+            }
 
-            case 2:
-                executePushCommand(parentPat, "master");
+            case 2: {
+                executeSyncCommand(pat, "master");
                 pause();
                 break;
+            }
 
-            case 3:
+            case 3: {
                 clearScreen();
                 setColor(COLOR_LIGHT_CYAN);
                 cout << "\n";
-                cout << "  ╔════════════════════════════════════════════════════════════════════════════╗\n";
+                cout << "  +----------------------------------------------------------------------------+\n";
                 setColor(COLOR_LIGHT_YELLOW);
-                cout << "  ║                   PUSHING BOTH BRANCHES TO PARENT...                     ║\n";
+                cout << "  |                   SYNCING BOTH BRANCHES FROM FORK...                       |\n";
                 setColor(COLOR_LIGHT_CYAN);
-                cout << "  ╚════════════════════════════════════════════════════════════════════════════╝\n";
+                cout << "  +----------------------------------------------------------------------------+\n";
+                setColor(COLOR_WHITE);
+                cout << "\n";
+                setColor(COLOR_LIGHT_CYAN);
+                cout << "  Step 1/2: Syncing MAIN branch...\n";
+                setColor(COLOR_LIGHT_GREEN);
+                executeSyncCommand(pat, "main");
+                setColor(COLOR_LIGHT_CYAN);
+                cout << "  Step 2/2: Syncing MASTER branch...\n";
+                setColor(COLOR_LIGHT_GREEN);
+                executeSyncCommand(pat, "master");
+                setColor(COLOR_LIGHT_GREEN);
+                cout << "  [SUCCESS] Both branches synced from fork!\n";
+                setColor(COLOR_WHITE);
+                pause();
+                break;
+            }
+
+            case 4: {
+                executePushCommand(parentPat, "main");
+                pause();
+                break;
+            }
+
+            case 5: {
+                executePushCommand(parentPat, "master");
+                pause();
+                break;
+            }
+
+            case 6: {
+                clearScreen();
+                setColor(COLOR_LIGHT_CYAN);
+                cout << "\n";
+                cout << "  +----------------------------------------------------------------------------+\n";
+                setColor(COLOR_LIGHT_YELLOW);
+                cout << "  |                   PUSHING BOTH BRANCHES TO PARENT...                     |\n";
+                setColor(COLOR_LIGHT_CYAN);
+                cout << "  +----------------------------------------------------------------------------+\n";
                 setColor(COLOR_WHITE);
                 cout << "\n";
                 setColor(COLOR_LIGHT_CYAN);
@@ -297,8 +417,9 @@ int main() {
                 setColor(COLOR_WHITE);
                 pause();
                 break;
+            }
 
-            case 4:
+            case 7: {
                 printBanner();
                 setColor(COLOR_LIGHT_GREEN);
                 cout << "  [INFO] Enter new PAT (Fork authentication):\n";
@@ -319,8 +440,9 @@ int main() {
                 }
                 pause();
                 break;
+            }
 
-            case 5:
+            case 8: {
                 printBanner();
                 setColor(COLOR_LIGHT_GREEN);
                 cout << "  [INFO] Enter new PARENT_PAT (Upstream authentication):\n";
@@ -341,16 +463,60 @@ int main() {
                 }
                 pause();
                 break;
+            }
 
-            default:
-                printBanner();
-                setColor(COLOR_RED);
-                cout << "  [ERROR] Invalid choice. Please select 0-5.\n\n";
+            case 9: {
+                executeSyncFromParentCommand(parentPat, "main");
+                pause();
+                break;
+            }
+
+            case 10: {
+                executeSyncFromParentCommand(parentPat, "master");
+                pause();
+                break;
+            }
+
+            case 11: {
+                clearScreen();
+                setColor(COLOR_LIGHT_CYAN);
+                cout << "\n";
+                cout << "  +----------------------------------------------------------------------------+\n";
+                setColor(COLOR_LIGHT_YELLOW);
+                cout << "  |                   SYNCING BOTH BRANCHES FROM PARENT...                     |\n";
+                setColor(COLOR_LIGHT_CYAN);
+                cout << "  +----------------------------------------------------------------------------+\n";
+                setColor(COLOR_WHITE);
+                cout << "\n";
+                setColor(COLOR_LIGHT_CYAN);
+                cout << "  Step 1/2: Syncing MAIN branch from parent...\n";
+                setColor(COLOR_LIGHT_GREEN);
+                executeSyncFromParentCommand(parentPat, "main");
+                setColor(COLOR_LIGHT_CYAN);
+                cout << "  Step 2/2: Syncing MASTER branch from parent...\n";
+                setColor(COLOR_LIGHT_GREEN);
+                executeSyncFromParentCommand(parentPat, "master");
+                setColor(COLOR_LIGHT_GREEN);
+                cout << "  [SUCCESS] Both branches synced from parent! Fork is now up to date.\n";
                 setColor(COLOR_WHITE);
                 pause();
                 break;
+            }
+
+            default: {
+                printBanner();
+                setColor(COLOR_RED);
+                cout << "  [ERROR] Invalid choice. Please select 0-11.\n\n";
+                setColor(COLOR_WHITE);
+                pause();
+                break;
+            }
         }
     }
 
     return 0;
 }
+
+
+
+

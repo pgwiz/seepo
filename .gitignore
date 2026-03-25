@@ -32,6 +32,7 @@ staticfiles/
 *.swp
 *.swo
 
+full_sync.cmd
 # Scripts & Local Tools
 menu.cmd
 menu.exe
