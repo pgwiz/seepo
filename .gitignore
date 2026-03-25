@@ -32,6 +32,9 @@ staticfiles/
 *.swp
 *.swo
 
+# Scripts & Local Tools
+menu.cmd
+
 # OS files
 .DS_Store
 Thumbs.db
