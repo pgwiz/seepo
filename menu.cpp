@@ -79,6 +79,11 @@ string readConfigValue(const string& configFile, const string& key) {
     return "";
 }
 
+// Forward declarations
+void checkAndCommitChanges(const string& branch);
+void executeMergeLocalBranches(const string& source, const string& target);
+void executeMergeFromParent(const string& parentPat, const string& branch);
+
 void printBanner() {
     clearScreen();
     setColor(COLOR_LIGHT_CYAN);
@@ -90,7 +95,7 @@ void printBanner() {
     cout << "  |                   Automate Fork Synchronization                           |\n";
     cout << "  |                                                                            |\n";
     setColor(COLOR_LIGHT_GREEN);
-    cout << "  |              Pull from Upstream � Push to Fork � Sync Fork                |\n";
+    cout << "  |              Pull from Upstream ? Push to Fork ? Sync Fork                |\n";
     setColor(COLOR_LIGHT_CYAN);
     cout << "  |                                                                            |\n";
     setColor(COLOR_LIGHT_YELLOW);
@@ -654,6 +659,7 @@ int main() {
 
     return 0;
 }
+
 
 
 
